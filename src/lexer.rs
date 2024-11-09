@@ -50,4 +50,15 @@ impl<'a> Lexer<'a> {
         self.position = self.read_position;
         self.read_position += self.ch.map_or(0, |c| c.len_utf8());
     }
+
+    /**
+     * 次の文字を覗き見する(読み進めはしない)
+     */
+    fn peek_char(&self) -> Option<char> {
+        if self.read_position >= self.input.len() {
+            return None;
+        } else {
+            self.input[self.read_position..].chars().next()
+        }
+    }
 }
