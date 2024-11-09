@@ -61,4 +61,17 @@ impl<'a> Lexer<'a> {
             self.input[self.read_position..].chars().next()
         }
     }
+
+    /**
+     * ホワイトスペースの間は読み飛ばす
+     */
+    fn skip_whitespace(&mut self) {
+        while let Some(ch) = self.ch {
+            if ch.is_whitespace() {
+                self.read_char();
+            } else {
+                break;
+            }
+        }
+    }
 }
