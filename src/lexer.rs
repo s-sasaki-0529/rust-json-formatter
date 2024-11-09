@@ -19,3 +19,18 @@ pub struct Lexer<'a> {
     read_position: usize, // 解析中の次の文字位置
     ch: Option<char>,     // 現在解析中の文字 (None は EOF)
 }
+
+impl<'a> Lexer<'a> {
+    /**
+     * 新しい Lexer を生成する
+     */
+    pub fn new(input: &'a str) -> Self {
+        let mut lexer = Lexer {
+            input,
+            position: 0,
+            read_position: 0,
+            ch: None,
+        };
+        return lexer;
+    }
+}
