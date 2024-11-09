@@ -33,4 +33,21 @@ impl<'a> Lexer<'a> {
         };
         return lexer;
     }
+
+    /**
+     * 次の文字を読み込み、現在の位置を更新する
+     */
+    fn read_char(&mut self) {
+        // 既に末尾の場合、終了する
+        if self.read_position >= self.input.len() {
+            self.ch = None;
+        }
+        // 次の文字があれば読み出す
+        else {
+            self.ch = self.input[self.read_position..].chars().next();
+        }
+        // 位置を進める(対象文字のバイト数分進める)
+        self.position = self.read_position;
+        self.read_position += self.ch.map_or(0, |c| c.len_utf8());
+    }
 }
