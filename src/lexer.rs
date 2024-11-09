@@ -35,6 +35,58 @@ impl<'a> Lexer<'a> {
     }
 
     /**
+     * 次のトークンを取得する
+     */
+    pub fn next_token(&mut self) -> Option<Token> {
+        self.skip_whitespace();
+        let token: Option<Token> = match self.ch {
+            Some('{') => {
+                self.read_char();
+                Some(Token::LeftBrace)
+            }
+            Some('}') => {
+                self.read_char();
+                Some(Token::RightBrace)
+            }
+            Some('[') => {
+                self.read_char();
+                Some(Token::LeftBracket)
+            }
+            Some(']') => {
+                self.read_char();
+                Some(Token::RightBracket)
+            }
+            Some(':') => {
+                self.read_char();
+                Some(Token::Colon)
+            }
+            Some(',') => {
+                self.read_char();
+                Some(Token::Comma)
+            }
+            Some('"') => {
+                // ここで後ほど文字列の処理を実装します
+                None
+            }
+            Some(c) if c.is_digit(10) || c == '-' => {
+                // TODO: 数値の処理を実装する
+                None
+            }
+            Some(c) if c.is_alphabetic() => {
+                // TODO: true, false, null の処理を実装する
+                None
+            }
+            None => return None,
+            _ => {
+                // 未知の文字
+                self.read_char();
+                None
+            }
+        };
+        return token;
+    }
+
+    /**
      * 次の文字を読み込み、現在の位置を更新する
      */
     fn read_char(&mut self) {
