@@ -1,3 +1,7 @@
+mod lexer;
+
+use lexer::Token;
+
 fn main() {
-    println!("Hello, world!");
+    println!("JSON Formatter in Rust");
 }
