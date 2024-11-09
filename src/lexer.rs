@@ -31,6 +31,7 @@ impl<'a> Lexer<'a> {
             read_position: 0,
             ch: None,
         };
+        lexer.read_char();
         return lexer;
     }
 
@@ -125,5 +126,30 @@ impl<'a> Lexer<'a> {
                 break;
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_lexer_initialization() {
+        let input = r#"{ "[Test]" }"#;
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(lexer.input, input);
+        assert_eq!(lexer.position, 0);
+        assert_eq!(lexer.read_position, 1);
+        assert_eq!(lexer.ch, Some('{'));
+    }
+
+    #[test]
+    fn test_next_token_simple() {
+        let input = r#"{ }"#;
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(lexer.next_token(), Some(Token::LeftBrace)); // {
+        assert_eq!(lexer.next_token(), Some(Token::RightBrace)); // }
     }
 }
