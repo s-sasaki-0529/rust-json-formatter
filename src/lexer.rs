@@ -74,7 +74,6 @@ impl<'a> Lexer<'a> {
                 if let Ok(number) = string.parse::<f64>() {
                     Some(Token::Number(number))
                 } else {
-                    // TODO: パース失敗時のエラー処理
                     None
                 }
             }
@@ -138,7 +137,7 @@ impl<'a> Lexer<'a> {
                         't' => result.push('\t'),   // Horizontal tab
                         'u' => {
                             // Unicode エスケープシーケンスの場合
-                            // TODO: 細かい実装はあとで。今は簡易的に次の4文字を読み飛ばす。
+                            // 今回は簡易的に4文字読み飛ばすだけにする
                             for _ in 0..4 {
                                 self.read_char();
                             }
