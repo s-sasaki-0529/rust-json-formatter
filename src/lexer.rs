@@ -109,17 +109,6 @@ impl<'a> Lexer<'a> {
     }
 
     /**
-     * 次の文字を覗き見する(読み進めはしない)
-     */
-    fn peek_char(&self) -> Option<char> {
-        if self.read_position >= self.input.len() {
-            return None;
-        } else {
-            self.input[self.read_position..].chars().next()
-        }
-    }
-
-    /**
      * 文字列リテラルを読み取る
      * `"` から `"` までの文字列を読み取る
      */
@@ -225,7 +214,7 @@ mod tests {
     #[test]
     fn test_lexer_initialization() {
         let input = r#"{ "[Test]" }"#;
-        let mut lexer = Lexer::new(input);
+        let lexer = Lexer::new(input);
 
         assert_eq!(lexer.input, input);
         assert_eq!(lexer.position, 0);

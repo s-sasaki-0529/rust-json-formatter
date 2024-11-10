@@ -83,11 +83,6 @@ impl JsonValue {
         }
     }
 
-    fn push_str_with_indent(&self, formatted: &mut String, indent: usize, str: &str) {
-        self.push_indent(formatted, indent);
-        formatted.push_str(str);
-    }
-
     fn push_str(&self, formatted: &mut String, str: &str) {
         formatted.push_str(str);
     }
@@ -210,6 +205,7 @@ mod tests {
         assert_eq!(value.format(0), expected);
     }
 
+    #[test]
     fn test_format_value_mixed() {
         let mut object = IndexMap::new();
         let mut nested_object1 = IndexMap::new();
@@ -235,7 +231,7 @@ mod tests {
   "key1": [
     1,
     {
-      "key2": 2
+      "key2": 2,
       "key3": 3
     },
     [
@@ -247,7 +243,7 @@ mod tests {
         ]
       }
     ]
-  ],
+  ]
 }"#;
         assert_eq!(value.format(0), expected);
     }

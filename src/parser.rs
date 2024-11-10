@@ -4,7 +4,6 @@ use crate::{
     json::{JsonArray, JsonObject, JsonValue},
     lexer::{Lexer, Token},
 };
-use std::collections::HashMap;
 
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
