@@ -1,3 +1,5 @@
+use indexmap::IndexMap;
+
 use crate::{
     json::{JsonArray, JsonObject, JsonValue},
     lexer::{Lexer, Token},
@@ -67,7 +69,7 @@ impl<'a> Parser<'a> {
      * 現在のトークンが { であることが前提
      */
     fn parse_object(&mut self) -> Option<JsonValue> {
-        let mut object: JsonObject = HashMap::new();
+        let mut object: JsonObject = IndexMap::new();
 
         // 先頭の { を読み飛ばす
         if !self.next_token_if_current_is(Token::LeftBrace) {
@@ -229,7 +231,7 @@ mod tests {
         let mut parser = Parser::new(Lexer::new(r#"{"str": "hello", "num": -32.054, "array": [1, 2, 3]}"#));
         let object = parser.parse_value();
 
-        let mut expected_object = HashMap::new();
+        let mut expected_object = IndexMap::new();
         expected_object.insert("str".to_string(), JsonValue::String("hello".to_string()));
         expected_object.insert("num".to_string(), JsonValue::Number(-32.054));
         expected_object.insert(
@@ -249,10 +251,10 @@ mod tests {
         let mut parser = Parser::new(Lexer::new(r#"{"key": {"nested": "value"}}"#));
         let object = parser.parse_value();
 
-        let mut nested_object = HashMap::new();
+        let mut nested_object = IndexMap::new();
         nested_object.insert("nested".to_string(), JsonValue::String("value".to_string()));
 
-        let mut expected_object = HashMap::new();
+        let mut expected_object = IndexMap::new();
         expected_object.insert("key".to_string(), JsonValue::Object(nested_object));
 
         assert_eq!(object, Some(JsonValue::Object(expected_object)));
@@ -270,7 +272,7 @@ mod tests {
             JsonValue::True,
             JsonValue::False,
             JsonValue::Null,
-            JsonValue::Object(HashMap::from([(
+            JsonValue::Object(IndexMap::from([(
                 "key".to_string(),
                 JsonValue::String("value".to_string()),
             )])),

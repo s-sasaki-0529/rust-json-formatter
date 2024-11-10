@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 #[derive(Debug, PartialEq)]
 pub enum JsonValue {
@@ -11,7 +11,7 @@ pub enum JsonValue {
     Null,               // null
 }
 
-pub type JsonObject = HashMap<String, JsonValue>;
+pub type JsonObject = IndexMap<String, JsonValue>;
 pub type JsonArray = Vec<JsonValue>;
 
 impl JsonValue {
