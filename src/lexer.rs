@@ -74,13 +74,12 @@ impl<'a> Lexer<'a> {
                 if let Ok(number) = string.parse::<f64>() {
                     Some(Token::Number(number))
                 } else {
-                    // TDOO: パース失敗時のエラー処理
+                    // TODO: パース失敗時のエラー処理
                     None
                 }
             }
             Some(c) if c.is_alphabetic() => {
-                // TODO: true, false, null の処理を実装する
-                None
+                return self.read_literal();
             }
             None => return None,
             _ => {
@@ -182,6 +181,27 @@ impl<'a> Lexer<'a> {
             }
         }
         return result;
+    }
+
+    /**
+     * リテラル (true, false, null) を読み取る
+     */
+    fn read_literal(&mut self) -> Option<Token> {
+        let mut string = String::new();
+        while let Some(ch) = self.ch {
+            if ch.is_alphabetic() {
+                string.push(ch);
+                self.read_char();
+            } else {
+                break;
+            }
+        }
+        return match string.as_str() {
+            "true" => Some(Token::True),
+            "false" => Some(Token::False),
+            "null" => Some(Token::Null),
+            _ => None, // 未知のリテラルは無視する
+        };
     }
 
     /**
@@ -300,6 +320,33 @@ mod tests {
         let mut lexer = Lexer::new(input);
 
         assert_eq!(lexer.next_token(), Some(Token::Number(-0.12345)));
+        assert_eq!(lexer.next_token(), None);
+    }
+
+    #[test]
+    fn test_next_token_literal_true() {
+        let input = "true";
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(lexer.next_token(), Some(Token::True));
+        assert_eq!(lexer.next_token(), None);
+    }
+
+    #[test]
+    fn test_next_token_literal_false() {
+        let input = "false";
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(lexer.next_token(), Some(Token::False));
+        assert_eq!(lexer.next_token(), None);
+    }
+
+    #[test]
+    fn test_next_token_literal_null() {
+        let input = "null";
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(lexer.next_token(), Some(Token::Null));
         assert_eq!(lexer.next_token(), None);
     }
 }
