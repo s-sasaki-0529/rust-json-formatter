@@ -31,24 +31,52 @@ impl JsonValue {
     fn format_value(&self, indent: usize, formatted: &mut String) {
         match self {
             JsonValue::Object(obj) => {}
-            JsonValue::Array(array) => {}
+            JsonValue::Array(array) => {
+                self.push_str_with_indent(formatted, indent, "[\n");
+                for (i, value) in array.iter().enumerate() {
+                    value.format_value(indent + 2, formatted);
+                    if i < array.len() - 1 {
+                        self.push_str(formatted, ",\n");
+                    } else {
+                        self.push_str(formatted, "\n");
+                    }
+                }
+                self.push_indent(formatted, indent);
+                formatted.push_str("]")
+            }
             JsonValue::String(str) => {
                 formatted.push('"');
                 formatted.push_str(str);
                 formatted.push('"');
             }
             JsonValue::Number(num) => {
-                formatted.push_str(&num.to_string());
+                let value = &num.to_string();
+                self.push_str_with_indent(formatted, indent, value);
             }
             JsonValue::True => {
-                formatted.push_str("true");
+                self.push_str_with_indent(formatted, indent, "true");
             }
             JsonValue::False => {
-                formatted.push_str("false");
+                self.push_str_with_indent(formatted, indent, "false");
             }
             JsonValue::Null => {
-                formatted.push_str("null");
+                self.push_str_with_indent(formatted, indent, "null");
             }
+        }
+    }
+
+    fn push_str_with_indent(&self, formatted: &mut String, indent: usize, str: &str) {
+        self.push_indent(formatted, indent);
+        formatted.push_str(str);
+    }
+
+    fn push_str(&self, formatted: &mut String, str: &str) {
+        formatted.push_str(str);
+    }
+
+    fn push_indent(&self, formatted: &mut String, indent: usize) {
+        for _ in 0..indent {
+            formatted.push_str(" ");
         }
     }
 }
@@ -60,30 +88,74 @@ mod tests {
     #[test]
     fn test_format_value_true() {
         let value = JsonValue::True;
-        assert_eq!(value.format(2), "true");
+        assert_eq!(value.format(0), "true");
     }
 
     #[test]
     fn test_format_value_false() {
         let value = JsonValue::False;
-        assert_eq!(value.format(2), "false");
+        assert_eq!(value.format(0), "false");
     }
 
     #[test]
     fn test_format_value_null() {
         let value = JsonValue::Null;
-        assert_eq!(value.format(2), "null");
+        assert_eq!(value.format(0), "null");
     }
 
     #[test]
     fn test_format_value_number() {
-        let value = JsonValue::Number(123.456);
-        assert_eq!(value.format(2), "123.456");
+        let value1 = JsonValue::Number(123.0);
+        assert_eq!(value1.format(0), "123");
+
+        let value2 = JsonValue::Number(123.456);
+        assert_eq!(value2.format(0), "123.456");
     }
 
     #[test]
     fn test_format_value_string() {
         let value = JsonValue::String("hello, world".to_string());
-        assert_eq!(value.format(2), "\"hello, world\"");
+        assert_eq!(value.format(0), "\"hello, world\"");
+    }
+
+    #[test]
+    fn test_format_value_array() {
+        let value = JsonValue::Array(vec![
+            JsonValue::Number(1.0),
+            JsonValue::Number(2.0),
+            JsonValue::Number(3.0),
+        ]);
+        let expected = r#"[
+  1,
+  2,
+  3
+]"#;
+        assert_eq!(value.format(0), expected);
+    }
+
+    #[test]
+    fn test_format_value_array_nested() {
+        let value = JsonValue::Array(vec![
+            JsonValue::Number(1.1),
+            JsonValue::Number(1.2),
+            JsonValue::Array(vec![
+                JsonValue::Number(2.1),
+                JsonValue::Number(2.2),
+                JsonValue::Array(vec![JsonValue::Number(3.1), JsonValue::Number(3.2)]),
+            ]),
+        ]);
+        let expected = r#"[
+  1.1,
+  1.2,
+  [
+    2.1,
+    2.2,
+    [
+      3.1,
+      3.2
+    ]
+  ]
+]"#;
+        assert_eq!(value.format(0), expected);
     }
 }
