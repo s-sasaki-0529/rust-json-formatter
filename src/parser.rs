@@ -130,7 +130,40 @@ impl<'a> Parser<'a> {
      * 配列をパースする
      */
     fn parse_array(&mut self) -> Option<JsonValue> {
-        None
+        let mut array: JsonArray = Vec::new();
+
+        // 先頭の [ を読み飛ばす
+        if !self.next_token_if_current_is(Token::LeftBracket) {
+            return None;
+        }
+
+        // すぐに ] が来る場合は空配列として即終了
+        if let Some(Token::RightBracket) = self.current_token {
+            self.next_token();
+            return Some(JsonValue::Array(array));
+        }
+
+        // 配列の要素の数だけループする
+        loop {
+            // value (値がオブジェクトや配列である場合のためにここで再帰する)
+            if let Some(value) = self.parse_value() {
+                array.push(value);
+            }
+
+            // , なら次の要素に続き ] が来たらループ終了
+            match &self.current_token {
+                Some(Token::Comma) => {
+                    self.next_token();
+                }
+                Some(Token::RightBracket) => {
+                    self.next_token();
+                    break;
+                }
+                _ => return None,
+            }
+        }
+
+        return Some(JsonValue::Array(array));
     }
 
     /**
@@ -204,12 +237,20 @@ mod tests {
 
     #[test]
     fn test_parse_object() {
-        let mut parser = Parser::new(Lexer::new(r#"{"str": "hello", "num": -32.054}"#));
+        let mut parser = Parser::new(Lexer::new(r#"{"str": "hello", "num": -32.054, "array": [1, 2, 3]}"#));
         let object = parser.parse_value();
 
         let mut expected_object = HashMap::new();
         expected_object.insert("str".to_string(), JsonValue::String("hello".to_string()));
         expected_object.insert("num".to_string(), JsonValue::Number(-32.054));
+        expected_object.insert(
+            "array".to_string(),
+            JsonValue::Array(vec![
+                JsonValue::Number(1.0),
+                JsonValue::Number(2.0),
+                JsonValue::Number(3.0),
+            ]),
+        );
 
         assert_eq!(object, Some(JsonValue::Object(expected_object)));
     }
@@ -226,5 +267,45 @@ mod tests {
         expected_object.insert("key".to_string(), JsonValue::Object(nested_object));
 
         assert_eq!(object, Some(JsonValue::Object(expected_object)));
+    }
+
+    #[test]
+    fn test_parse_array() {
+        let mut parser = Parser::new(Lexer::new(r#"[1, -2, 0.03, true, false, null, { "key": "value" }]"#));
+        let array = parser.parse_value();
+
+        let expected_array = vec![
+            JsonValue::Number(1.0),
+            JsonValue::Number(-2.0),
+            JsonValue::Number(0.03),
+            JsonValue::True,
+            JsonValue::False,
+            JsonValue::Null,
+            JsonValue::Object(HashMap::from([(
+                "key".to_string(),
+                JsonValue::String("value".to_string()),
+            )])),
+        ];
+
+        assert_eq!(array, Some(JsonValue::Array(expected_array)));
+    }
+
+    #[test]
+    fn test_parse_array_nested() {
+        let mut parser = Parser::new(Lexer::new(r#"[1, [2, [3, [4]]]]"#));
+        let array = parser.parse_value();
+
+        let expected_array = vec![
+            JsonValue::Number(1.0),
+            JsonValue::Array(vec![
+                JsonValue::Number(2.0),
+                JsonValue::Array(vec![
+                    JsonValue::Number(3.0),
+                    JsonValue::Array(vec![JsonValue::Number(4.0)]),
+                ]),
+            ]),
+        ];
+
+        assert_eq!(array, Some(JsonValue::Array(expected_array)));
     }
 }
