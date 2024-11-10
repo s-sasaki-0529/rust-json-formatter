@@ -32,7 +32,11 @@ impl JsonValue {
         match self {
             JsonValue::Object(obj) => {}
             JsonValue::Array(array) => {}
-            JsonValue::String(str) => {}
+            JsonValue::String(str) => {
+                formatted.push('"');
+                formatted.push_str(str);
+                formatted.push('"');
+            }
             JsonValue::Number(num) => {
                 formatted.push_str(&num.to_string());
             }
@@ -75,5 +79,11 @@ mod tests {
     fn test_format_value_number() {
         let value = JsonValue::Number(123.456);
         assert_eq!(value.format(2), "123.456");
+    }
+
+    #[test]
+    fn test_format_value_string() {
+        let value = JsonValue::String("hello, world".to_string());
+        assert_eq!(value.format(2), "\"hello, world\"");
     }
 }
