@@ -71,9 +71,7 @@ impl<'a> Parser<'a> {
         let mut object: JsonObject = IndexMap::new();
 
         // 先頭の { を読み飛ばす
-        if !self.next_token_if_current_is(Token::LeftBrace) {
-            return None;
-        }
+        self.next_token();
 
         // すぐに } が来る場合は空オブジェクトとして即終了
         if let Some(Token::RightBrace) = self.current_token {
@@ -83,18 +81,16 @@ impl<'a> Parser<'a> {
 
         // キーバリューのペアの数だけ繰り返す
         loop {
-            // key
+            // 文字列のキーを控えておく
             let key = if let Some(Token::String(s)) = &self.current_token {
                 s.clone()
             } else {
                 return None;
             };
-
-            // :
             self.next_token();
-            if !self.next_token_if_current_is(Token::Colon) {
-                return None;
-            }
+
+            // : (読み飛ばす)
+            self.next_token();
 
             // value (値がオブジェクトや配列である場合のためにここで再帰する)
             if let Some(value) = self.parse_value() {
@@ -123,9 +119,7 @@ impl<'a> Parser<'a> {
         let mut array: JsonArray = Vec::new();
 
         // 先頭の [ を読み飛ばす
-        if !self.next_token_if_current_is(Token::LeftBracket) {
-            return None;
-        }
+        self.next_token();
 
         // すぐに ] が来る場合は空配列として即終了
         if let Some(Token::RightBracket) = self.current_token {
@@ -161,19 +155,6 @@ impl<'a> Parser<'a> {
      */
     fn next_token(&mut self) {
         self.current_token = self.lexer.next_token();
-    }
-
-    /**
-     * 現在のトークンが期待されるトークン化を確認してから次のトークンに進む
-     * 期待されるトークンでない場合は何もしない
-     */
-    fn next_token_if_current_is(&mut self, expected_token: Token) -> bool {
-        if self.current_token == Some(expected_token) {
-            self.next_token();
-            return true;
-        } else {
-            return false;
-        }
     }
 }
 
