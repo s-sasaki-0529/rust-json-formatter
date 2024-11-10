@@ -247,10 +247,7 @@ mod tests {
         let input = r#""Hello, World!"#;
         let mut lexer = Lexer::new(input);
 
-        assert_eq!(
-            lexer.next_token(),
-            Some(Token::String("Hello, World!".to_string()))
-        );
+        assert_eq!(lexer.next_token(), Some(Token::String("Hello, World!".to_string())));
         assert_eq!(lexer.next_token(), None);
     }
 
@@ -259,10 +256,7 @@ mod tests {
         let input = r#""Hello, \"World\"!""#;
         let mut lexer = Lexer::new(input);
 
-        assert_eq!(
-            lexer.next_token(),
-            Some(Token::String("Hello, \"World\"!".to_string()))
-        );
+        assert_eq!(lexer.next_token(), Some(Token::String("Hello, \"World\"!".to_string())));
         assert_eq!(lexer.next_token(), None);
     }
 
@@ -271,10 +265,7 @@ mod tests {
         let input = "\"\\b\\f\\n\\r\\t\"";
         let mut lexer = Lexer::new(input);
 
-        assert_eq!(
-            lexer.next_token(),
-            Some(Token::String("\x08\x0C\n\r\t".to_string()))
-        );
+        assert_eq!(lexer.next_token(), Some(Token::String("\x08\x0C\n\r\t".to_string())));
         assert_eq!(lexer.next_token(), None);
     }
 
