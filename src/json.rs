@@ -13,3 +13,30 @@ pub enum JsonValue {
 
 pub type JsonObject = HashMap<String, JsonValue>;
 pub type JsonArray = Vec<JsonValue>;
+
+impl JsonValue {
+    /**
+     * JSON全体を整形した文字列を返す
+     */
+    pub fn format(&self, indent: usize) -> String {
+        let mut formatted = String::new();
+        return self.format_value(indent, &mut formatted);
+    }
+
+    /**
+     * JSONに含まれる値を整形した文字列を返す
+     * オブジェクトや配列の場合、再帰的に整形を繰り返す
+     */
+    fn format_value(&self, indent: usize, formatted: &mut String) -> String {
+        match self {
+            JsonValue::Object(obj) => {}
+            JsonValue::Array(array) => {}
+            JsonValue::String(str) => {}
+            JsonValue::Number(num) => {}
+            JsonValue::True => {}
+            JsonValue::False => {}
+            JsonValue::Null => {}
+        }
+        return formatted;
+    }
+}
