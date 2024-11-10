@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    fmt::{Display, Formatter, Result},
-};
+use std::collections::HashMap;
 
 #[derive(Debug, PartialEq)]
 pub enum JsonValue {
@@ -16,19 +13,3 @@ pub enum JsonValue {
 
 pub type JsonObject = HashMap<String, JsonValue>;
 pub type JsonArray = Vec<JsonValue>;
-
-impl JsonValue {
-    pub fn pretty(&self, indent: usize) -> String {
-        let indent_str = " ".repeat(indent);
-
-        match self {
-            JsonValue::Object(obj) => String::from(""),
-            JsonValue::Array(array) => String::from(""),
-            JsonValue::String(str) => String::from(""),
-            JsonValue::Number(num) => String::from(""),
-            JsonValue::True => String::from(""),
-            JsonValue::False => String::from(""),
-            JsonValue::Null => String::from(""),
-        }
-    }
-}
