@@ -20,23 +20,52 @@ impl JsonValue {
      */
     pub fn format(&self, indent: usize) -> String {
         let mut formatted = String::new();
-        return self.format_value(indent, &mut formatted);
+        self.format_value(indent, &mut formatted);
+        return formatted;
     }
 
     /**
      * JSONに含まれる値を整形した文字列を返す
      * オブジェクトや配列の場合、再帰的に整形を繰り返す
      */
-    fn format_value(&self, indent: usize, formatted: &mut String) -> String {
+    fn format_value(&self, indent: usize, formatted: &mut String) {
         match self {
             JsonValue::Object(obj) => {}
             JsonValue::Array(array) => {}
             JsonValue::String(str) => {}
             JsonValue::Number(num) => {}
-            JsonValue::True => {}
-            JsonValue::False => {}
-            JsonValue::Null => {}
+            JsonValue::True => {
+                formatted.push_str("true");
+            }
+            JsonValue::False => {
+                formatted.push_str("false");
+            }
+            JsonValue::Null => {
+                formatted.push_str("null");
+            }
         }
-        return formatted;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_format_value_true() {
+        let value = JsonValue::True;
+        assert_eq!(value.format(2), "true");
+    }
+
+    #[test]
+    fn test_format_value_false() {
+        let value = JsonValue::False;
+        assert_eq!(value.format(2), "false");
+    }
+
+    #[test]
+    fn test_format_value_null() {
+        let value = JsonValue::Null;
+        assert_eq!(value.format(2), "null");
     }
 }
