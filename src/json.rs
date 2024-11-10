@@ -33,7 +33,9 @@ impl JsonValue {
             JsonValue::Object(obj) => {}
             JsonValue::Array(array) => {}
             JsonValue::String(str) => {}
-            JsonValue::Number(num) => {}
+            JsonValue::Number(num) => {
+                formatted.push_str(&num.to_string());
+            }
             JsonValue::True => {
                 formatted.push_str("true");
             }
@@ -67,5 +69,11 @@ mod tests {
     fn test_format_value_null() {
         let value = JsonValue::Null;
         assert_eq!(value.format(2), "null");
+    }
+
+    #[test]
+    fn test_format_value_number() {
+        let value = JsonValue::Number(123.456);
+        assert_eq!(value.format(2), "123.456");
     }
 }
