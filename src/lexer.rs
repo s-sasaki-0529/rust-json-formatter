@@ -66,8 +66,8 @@ impl<'a> Lexer<'a> {
                 Some(Token::Comma)
             }
             Some('"') => {
-                // ここで後ほど文字列の処理を実装します
-                None
+                let string = self.read_string();
+                Some(Token::String(string))
             }
             Some(c) if c.is_digit(10) || c == '-' => {
                 // TODO: 数値の処理を実装する
@@ -116,6 +116,53 @@ impl<'a> Lexer<'a> {
     }
 
     /**
+     * 文字列リテラルを読み取る
+     * `"` から `"` までの文字列を読み取る
+     */
+    fn read_string(&mut self) -> String {
+        let mut result = String::new();
+        self.read_char(); // 現在地が先頭の `"` なので読み飛ばす
+
+        while let Some(ch) = self.ch {
+            // 文字列の終端の場合そこで終了
+            if ch == '"' {
+                self.read_char();
+                break;
+            }
+            // エスケープシーケンスの場合は処理
+            if ch == '\\' {
+                // 次の文字がシーケンスになるので、対応する文字コードに変換する
+                self.read_char();
+                if let Some(esc) = self.ch {
+                    match esc {
+                        '"' => result.push('"'),
+                        '\\' => result.push('\\'),
+                        '/' => result.push('/'),
+                        'b' => result.push('\x08'), // Backspace
+                        'f' => result.push('\x0C'), // Form feed
+                        'n' => result.push('\n'),   // Line feed
+                        'r' => result.push('\r'),   // Carriage return
+                        't' => result.push('\t'),   // Horizontal tab
+                        'u' => {
+                            // Unicode エスケープシーケンスの場合
+                            // TODO: 細かい実装はあとで。今は簡易的に次の4文字を読み飛ばす。
+                            for _ in 0..4 {
+                                self.read_char();
+                            }
+                        }
+                        _ => {} // 未知のエスケープシーケンスは無視する
+                    }
+                }
+            } else {
+                // 通常の文字の場合はそのまま追加
+                result.push(ch);
+            }
+            self.read_char(); // 次の文字へ
+        }
+        return result;
+    }
+
+    /**
      * ホワイトスペースの間は読み飛ばす
      */
     fn skip_whitespace(&mut self) {
@@ -151,5 +198,41 @@ mod tests {
 
         assert_eq!(lexer.next_token(), Some(Token::LeftBrace)); // {
         assert_eq!(lexer.next_token(), Some(Token::RightBrace)); // }
+    }
+
+    #[test]
+    fn test_next_token_string() {
+        let input = r#""Hello, World!"#;
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(
+            lexer.next_token(),
+            Some(Token::String("Hello, World!".to_string()))
+        );
+        assert_eq!(lexer.next_token(), None);
+    }
+
+    #[test]
+    fn test_next_token_string_escape1() {
+        let input = r#""Hello, \"World\"!""#;
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(
+            lexer.next_token(),
+            Some(Token::String("Hello, \"World\"!".to_string()))
+        );
+        assert_eq!(lexer.next_token(), None);
+    }
+
+    #[test]
+    fn test_next_token_string_escape2() {
+        let input = "\"\\b\\f\\n\\r\\t\"";
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(
+            lexer.next_token(),
+            Some(Token::String("\x08\x0C\n\r\t".to_string()))
+        );
+        assert_eq!(lexer.next_token(), None);
     }
 }
