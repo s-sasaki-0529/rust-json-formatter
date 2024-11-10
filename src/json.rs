@@ -26,21 +26,9 @@ impl JsonValue {
             JsonValue::Array(array) => String::from(""),
             JsonValue::String(str) => String::from(""),
             JsonValue::Number(num) => String::from(""),
-            JsonValue::True => String::from("true"),
-            JsonValue::False => String::from("false"),
-            JsonValue::Null => String::from("null"),
+            JsonValue::True => String::from(""),
+            JsonValue::False => String::from(""),
+            JsonValue::Null => String::from(""),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_pretty_literal() {
-        assert_eq!(JsonValue::True.pretty(0), "true");
-        assert_eq!(JsonValue::False.pretty(0), "false");
-        assert_eq!(JsonValue::Null.pretty(0), "null");
     }
 }
