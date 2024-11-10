@@ -69,9 +69,14 @@ impl<'a> Lexer<'a> {
                 let string = self.read_string();
                 Some(Token::String(string))
             }
-            Some(c) if c.is_digit(10) || c == '-' => {
-                // TODO: 数値の処理を実装する
-                None
+            Some(c) if c.is_digit(10) || c == '-' || c == '+' => {
+                let string = self.read_number();
+                if let Ok(number) = string.parse::<f64>() {
+                    Some(Token::Number(number))
+                } else {
+                    // TDOO: パース失敗時のエラー処理
+                    None
+                }
             }
             Some(c) if c.is_alphabetic() => {
                 // TODO: true, false, null の処理を実装する
@@ -163,6 +168,23 @@ impl<'a> Lexer<'a> {
     }
 
     /**
+     * 数値リテラルを読み取る
+     * 数値または "-" から始まる数値文字列を読み取る
+     */
+    fn read_number(&mut self) -> String {
+        let mut result = String::new();
+        while let Some(ch) = self.ch {
+            if ch.is_digit(10) || ch == '.' || ch == '-' || ch == '+' || ch == 'e' || ch == 'E' {
+                result.push(ch);
+                self.read_char();
+            } else {
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
      * ホワイトスペースの間は読み飛ばす
      */
     fn skip_whitespace(&mut self) {
@@ -233,6 +255,51 @@ mod tests {
             lexer.next_token(),
             Some(Token::String("\x08\x0C\n\r\t".to_string()))
         );
+        assert_eq!(lexer.next_token(), None);
+    }
+
+    #[test]
+    fn test_next_token_number1() {
+        let input = "12345";
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(lexer.next_token(), Some(Token::Number(12345.0)));
+        assert_eq!(lexer.next_token(), None);
+    }
+
+    #[test]
+    fn test_next_token_number2() {
+        let input = "123.45";
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(lexer.next_token(), Some(Token::Number(123.45)));
+        assert_eq!(lexer.next_token(), None);
+    }
+
+    #[test]
+    fn test_next_token_number3() {
+        let input = "-123.45";
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(lexer.next_token(), Some(Token::Number(-123.45)));
+        assert_eq!(lexer.next_token(), None);
+    }
+
+    #[test]
+    fn test_next_token_number4() {
+        let input = "+123.45e6";
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(lexer.next_token(), Some(Token::Number(123450000.0)));
+        assert_eq!(lexer.next_token(), None);
+    }
+
+    #[test]
+    fn test_next_token_number5() {
+        let input = "-123.45E-3";
+        let mut lexer = Lexer::new(input);
+
+        assert_eq!(lexer.next_token(), Some(Token::Number(-0.12345)));
         assert_eq!(lexer.next_token(), None);
     }
 }
