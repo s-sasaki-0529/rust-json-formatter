@@ -24,16 +24,9 @@ impl<'a> Parser<'a> {
     }
 
     /**
-     * JSON全体をパースする
-     */
-    pub fn parse(&mut self) -> Option<JsonValue> {
-        self.parse_value()
-    }
-
-    /**
      * JSON値をパースする
      */
-    fn parse_value(&mut self) -> Option<JsonValue> {
+    pub fn parse(&mut self) -> Option<JsonValue> {
         match &self.current_token {
             Some(Token::LeftBrace) => self.parse_object(),  // { がオブジェクトの開始
             Some(Token::LeftBracket) => self.parse_array(), // [ が配列の開始
@@ -93,7 +86,7 @@ impl<'a> Parser<'a> {
             self.next_token();
 
             // value (値がオブジェクトや配列である場合のためにここで再帰する)
-            if let Some(value) = self.parse_value() {
+            if let Some(value) = self.parse() {
                 object.insert(key, value);
             }
 
@@ -130,7 +123,7 @@ impl<'a> Parser<'a> {
         // 配列の要素の数だけループする
         loop {
             // value (値がオブジェクトや配列である場合のためにここで再帰する)
-            if let Some(value) = self.parse_value() {
+            if let Some(value) = self.parse() {
                 array.push(value);
             }
 
@@ -209,7 +202,7 @@ mod tests {
     #[test]
     fn test_parse_object() {
         let mut parser = Parser::new(Lexer::new(r#"{"str": "hello", "num": -32.054, "array": [1, 2, 3]}"#));
-        let object = parser.parse_value();
+        let object = parser.parse();
 
         let mut expected_object = IndexMap::new();
         expected_object.insert("str".to_string(), JsonValue::String("hello".to_string()));
@@ -229,7 +222,7 @@ mod tests {
     #[test]
     fn test_parse_object_nested() {
         let mut parser = Parser::new(Lexer::new(r#"{"key": {"nested": "value"}}"#));
-        let object = parser.parse_value();
+        let object = parser.parse();
 
         let mut nested_object = IndexMap::new();
         nested_object.insert("nested".to_string(), JsonValue::String("value".to_string()));
@@ -243,7 +236,7 @@ mod tests {
     #[test]
     fn test_parse_array() {
         let mut parser = Parser::new(Lexer::new(r#"[1, -2, 0.03, true, false, null, { "key": "value" }]"#));
-        let array = parser.parse_value();
+        let array = parser.parse();
 
         let expected_array = vec![
             JsonValue::Number(1.0),
@@ -264,7 +257,7 @@ mod tests {
     #[test]
     fn test_parse_array_nested() {
         let mut parser = Parser::new(Lexer::new(r#"[1, [2, [3, [4]]]]"#));
-        let array = parser.parse_value();
+        let array = parser.parse();
 
         let expected_array = vec![
             JsonValue::Number(1.0),
