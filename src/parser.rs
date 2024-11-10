@@ -75,9 +75,55 @@ impl<'a> Parser<'a> {
 
     /**
      * オブジェクトをパースする
+     * 現在のトークンが { であることが前提
      */
     fn parse_object(&mut self) -> Option<JsonValue> {
-        None
+        let mut object: JsonObject = HashMap::new();
+
+        // 先頭の { を読み飛ばす
+        if !self.next_token_if_current_is(Token::LeftBrace) {
+            return None;
+        }
+
+        // すぐに } が来る場合は空オブジェクトとして即終了
+        if let Some(Token::RightBrace) = self.current_token {
+            self.next_token();
+            return Some(JsonValue::Object(object));
+        }
+
+        // キーバリューのペアの数だけ繰り返す
+        loop {
+            // key
+            let key = if let Some(Token::String(s)) = &self.current_token {
+                s.clone()
+            } else {
+                return None;
+            };
+
+            // :
+            self.next_token();
+            if !self.next_token_if_current_is(Token::Colon) {
+                return None;
+            }
+
+            // value (値がオブジェクトや配列である場合のためにここで再帰する)
+            if let Some(value) = self.parse_value() {
+                object.insert(key, value);
+            }
+
+            // , なら次のキーバリューに続き } が来たらループ終了
+            match &self.current_token {
+                Some(Token::Comma) => {
+                    self.next_token();
+                }
+                Some(Token::RightBrace) => {
+                    self.next_token();
+                    break;
+                }
+                _ => return None,
+            }
+        }
+        return Some(JsonValue::Object(object));
     }
 
     /**
@@ -92,6 +138,19 @@ impl<'a> Parser<'a> {
      */
     fn next_token(&mut self) {
         self.current_token = self.lexer.next_token();
+    }
+
+    /**
+     * 現在のトークンが期待されるトークン化を確認してから次のトークンに進む
+     * 期待されるトークンでない場合は何もしない
+     */
+    fn next_token_if_current_is(&mut self, expected_token: Token) -> bool {
+        if self.current_token == Some(expected_token) {
+            self.next_token();
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 
@@ -141,5 +200,31 @@ mod tests {
 
         let mut parser5 = Parser::new(Lexer::new(r#"null"#));
         assert_eq!(parser5.parse(), Some(JsonValue::Null));
+    }
+
+    #[test]
+    fn test_parse_object() {
+        let mut parser = Parser::new(Lexer::new(r#"{"str": "hello", "num": -32.054}"#));
+        let object = parser.parse_value();
+
+        let mut expected_object = HashMap::new();
+        expected_object.insert("str".to_string(), JsonValue::String("hello".to_string()));
+        expected_object.insert("num".to_string(), JsonValue::Number(-32.054));
+
+        assert_eq!(object, Some(JsonValue::Object(expected_object)));
+    }
+
+    #[test]
+    fn test_parse_object_nested() {
+        let mut parser = Parser::new(Lexer::new(r#"{"key": {"nested": "value"}}"#));
+        let object = parser.parse_value();
+
+        let mut nested_object = HashMap::new();
+        nested_object.insert("nested".to_string(), JsonValue::String("value".to_string()));
+
+        let mut expected_object = HashMap::new();
+        expected_object.insert("key".to_string(), JsonValue::Object(nested_object));
+
+        assert_eq!(object, Some(JsonValue::Object(expected_object)));
     }
 }
